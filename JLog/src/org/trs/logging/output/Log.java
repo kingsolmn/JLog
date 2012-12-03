@@ -59,17 +59,17 @@ public class Log {
 	public static void w(String message){
 		out(LEVEL_WARNING, message);
 		
-		try {
-			fw = new FileWriter(LOG_FILE_DIR + LOG_FILE_NAME, true);
-			bw = new BufferedWriter(fw);
-			
-			bw.write(LOG_MSG_HEADER + " | W | " + message);
-			bw.close();
-		} catch (IOException e) {
-			if (DEBUG) {
-				e.printStackTrace();
-			}
-		}
+//		try {
+//			fw = new FileWriter(LOG_FILE_DIR + LOG_FILE_NAME, true);
+//			bw = new BufferedWriter(fw);
+//			
+//			bw.write(LOG_MSG_HEADER + " | W | " + message);
+//			bw.close();
+//		} catch (IOException e) {
+//			if (DEBUG) {
+//				e.printStackTrace();
+//			}
+//		}
 	}
 	
 	/**
