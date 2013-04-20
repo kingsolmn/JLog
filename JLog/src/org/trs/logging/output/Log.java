@@ -1,7 +1,7 @@
 /**
 * ╔════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 * ║ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ ║
-* ║ ▒▒▒▒▒▒         All code and information Copyright 2012 Steve Palacios. All rights reserved.         ▒▒▒▒▒▒ ║
+* ║ ▒▒▒▒▒▒         All code and information Copyright 2013 Steve Palacios. All rights reserved.         ▒▒▒▒▒▒ ║
 * ║ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ ║
 * ╚════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
@@ -9,7 +9,13 @@ package org.trs.logging.output;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+//import java.io.BufferedWriter;
+//import java.io.FileWriter;
+//import java.io.IOException;
 
 /**
  * Last changed: $LastChangedDate$
@@ -18,17 +24,19 @@ import java.io.IOException;
  */
 public class Log {
 
-	private static final boolean DEBUG = true;
+//	private   static final boolean DEBUG = true;
 	
-	private   static final String LOG_FILE_NAME = "";
-	private   static final String LOG_FILE_DIR  = "";
-	private   static final String LOG_MSG_HEADER = "Log: ";
+	private   static final int     THREAD_NAME_LENGTH = 20;
 	
-	private   static final String LEVEL_VERBOSE = "V";
-	private   static final String LEVEL_DEBUG   = "D";
-	private   static final String LEVEL_INFO    = "I";
-	private   static final String LEVEL_WARNING = "W";
-	private   static final String LEVEL_ERROR   = "E";
+	private   static final String  LOG_FILE_NAME = "TRSLogFile.log";
+	private   static final String  LOG_FILE_DIR  = System.getProperty("user.home") + "\\";
+//	private   static final String  LOG_MSG_HEADER = "Log: ";	
+	private   static final String  LEVEL_VERBOSE = "V";
+	private   static final String  LEVEL_DEBUG   = "D";
+	private   static final String  LEVEL_INFO    = "I";
+	private   static final String  LEVEL_WARNING = "W";
+	private   static final String  LEVEL_ERROR   = "E";
+	
 	
 	private   static       FileWriter fw;
 	private   static       BufferedWriter bw;
@@ -58,18 +66,6 @@ public class Log {
 	 */
 	public static void w(String message){
 		out(LEVEL_WARNING, message);
-		
-//		try {
-//			fw = new FileWriter(LOG_FILE_DIR + LOG_FILE_NAME, true);
-//			bw = new BufferedWriter(fw);
-//			
-//			bw.write(LOG_MSG_HEADER + " | W | " + message);
-//			bw.close();
-//		} catch (IOException e) {
-//			if (DEBUG) {
-//				e.printStackTrace();
-//			}
-//		}
 	}
 	
 	/**
@@ -85,10 +81,45 @@ public class Log {
 	 * Writes the given message to the "System.out" stream if the "DEBUG" flag is set in the "Constants" file.
 	 * @param The message to write.
 	 */
-	private static void out(String level, String message){
-		if(DEBUG){
-			System.out.println(LOG_MSG_HEADER + " <" + level + "> " + message);
+	private static void out(final String level, final String message){
+		final String thread = thread();
+		if(level == LEVEL_ERROR || level == LEVEL_WARNING){
+			System.err.println(time() + " [" + thread + "] " + " <" + level + "> " + message);
+		}else{
+			System.out.println(time() + " [" + thread + "] " + " <" + level + "> " + message);
 		}
+		
+		(new Thread("TRS LogWriter"){
+			public void run(){
+				try {
+					fw = new FileWriter(LOG_FILE_DIR + LOG_FILE_NAME, true);
+					bw = new BufferedWriter(fw);
+
+					try {
+						bw.write(time() + " [" + thread + "] " + " <" + level + "> " + message);
+					} catch (Exception e) {
+						fw = new FileWriter(LOG_FILE_DIR + LOG_FILE_NAME, true);
+						bw = new BufferedWriter(fw);
+						try {
+							bw.write(time() + " [" + thread + "] " + " <" + level + "> " + message);
+						} catch (Exception e2) {}
+					}
+					try {
+						bw.newLine();
+					} catch (Exception e) {
+						fw = new FileWriter(LOG_FILE_DIR + LOG_FILE_NAME, true);
+						bw = new BufferedWriter(fw);
+						try {
+							bw.newLine();
+						} catch (Exception e2) {}
+					}
+					bw.close();
+				} catch (Exception e) {
+					out(level, message);
+				}
+				return;
+			}
+		}).start();
 	}
 
 	/**
@@ -97,5 +128,37 @@ public class Log {
 	public static void i(String message) {
 		out(LEVEL_INFO, message);
 		
+	}
+	
+	private static String thread(){
+		char[] rawThreadName = Thread.currentThread().getName().toCharArray();
+		String outPut = "";
+		int threadNameLength = Thread.currentThread().getName().length();
+		for(int i = 0; i < THREAD_NAME_LENGTH; i++){
+			int temp = outPut.length();
+			if (temp < threadNameLength) {
+				outPut += rawThreadName[i];
+			}else{
+				outPut += " ";
+			}
+		}
+		
+		return outPut;	
+//		return Thread.currentThread().getName();
+	}
+	
+	private static String time(){
+		final DateFormat dateTimeFormat = new SimpleDateFormat("MM/dd/yy HH:mm:ss.S "); 
+		Date _date = new Date();  
+		
+		String curTime = dateTimeFormat.format(_date);
+//		System.out.println("curTime.length() = " + curTime.length());
+		while(curTime.length() <= 22){
+//			System.out.println("TRS Logging: Adding a zero to the end.");
+			curTime += "0";
+		}
+		
+		curTime = "[" + curTime + "] ";
+		return curTime;
 	}
 }
