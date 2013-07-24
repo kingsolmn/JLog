@@ -7,8 +7,8 @@
 */
 package org.trs.logging.output;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+//import java.io.BufferedWriter;
+//import java.io.FileWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,8 +28,8 @@ public class Log {
 	
 	private   static final int     THREAD_NAME_LENGTH = 20;
 	
-	private   static final String  LOG_FILE_NAME = "TRSLogFile.log";
-	private   static final String  LOG_FILE_DIR  = System.getProperty("user.home") + "\\";
+//	private   static final String  LOG_FILE_NAME = "TRSLogFile.log";
+//	private   static final String  LOG_FILE_DIR  = System.getProperty("user.home") + "\\";
 //	private   static final String  LOG_MSG_HEADER = "Log: ";	
 	private   static final String  LEVEL_VERBOSE = "V";
 	private   static final String  LEVEL_DEBUG   = "D";
@@ -38,8 +38,8 @@ public class Log {
 	private   static final String  LEVEL_ERROR   = "E";
 	
 	
-	private   static       FileWriter fw;
-	private   static       BufferedWriter bw;
+//	private   static       FileWriter fw;
+//	private   static       BufferedWriter bw;
 	
 	
 	/**
@@ -89,37 +89,37 @@ public class Log {
 			System.out.println(time() + " [" + thread + "] " + " <" + level + "> " + message);
 		}
 		
-		(new Thread("TRS LogWriter"){
-			public void run(){
-				try {
-					fw = new FileWriter(LOG_FILE_DIR + LOG_FILE_NAME, true);
-					bw = new BufferedWriter(fw);
-
-					try {
-						bw.write(time() + " [" + thread + "] " + " <" + level + "> " + message);
-					} catch (Exception e) {
-						fw = new FileWriter(LOG_FILE_DIR + LOG_FILE_NAME, true);
-						bw = new BufferedWriter(fw);
-						try {
-							bw.write(time() + " [" + thread + "] " + " <" + level + "> " + message);
-						} catch (Exception e2) {}
-					}
-					try {
-						bw.newLine();
-					} catch (Exception e) {
-						fw = new FileWriter(LOG_FILE_DIR + LOG_FILE_NAME, true);
-						bw = new BufferedWriter(fw);
-						try {
-							bw.newLine();
-						} catch (Exception e2) {}
-					}
-					bw.close();
-				} catch (Exception e) {
-					out(level, message);
-				}
-				return;
-			}
-		}).start();
+//		(new Thread("TRS LogWriter"){
+//			public void run(){
+//				try {
+//					fw = new FileWriter(LOG_FILE_DIR + LOG_FILE_NAME, true);
+//					bw = new BufferedWriter(fw);
+//
+//					try {
+//						bw.write(time() + " [" + thread + "] " + " <" + level + "> " + message);
+//					} catch (Exception e) {
+//						fw = new FileWriter(LOG_FILE_DIR + LOG_FILE_NAME, true);
+//						bw = new BufferedWriter(fw);
+//						try {
+//							bw.write(time() + " [" + thread + "] " + " <" + level + "> " + message);
+//						} catch (Exception e2) {}
+//					}
+//					try {
+//						bw.newLine();
+//					} catch (Exception e) {
+//						fw = new FileWriter(LOG_FILE_DIR + LOG_FILE_NAME, true);
+//						bw = new BufferedWriter(fw);
+//						try {
+//							bw.newLine();
+//						} catch (Exception e2) {}
+//					}
+//					bw.close();
+//				} catch (Exception e) {
+//					out(level, message);
+//				}
+//				return;
+//			}
+//		}).start();
 	}
 
 	/**
